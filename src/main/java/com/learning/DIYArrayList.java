@@ -3,19 +3,20 @@ package com.learning;
 import java.util.*;
 
 public class DIYArrayList<T> implements List<T> {
-    private Object[] elementData;
+    private Object[] elements;
     private int size = 0;
     private int iterIndex = -1;
 
     private static final Object[] EMPTY_LIST = {};
+    private static final int INCREASE_SIZE = 20;
 
-    public DIYArrayList() { this.elementData = EMPTY_LIST; }
+    public DIYArrayList() { this.elements = EMPTY_LIST; }
 
     public DIYArrayList(int capacity) {
         if (capacity < 0) { throw new IllegalArgumentException(); }
-        if (capacity == 0) { this.elementData = EMPTY_LIST; }
+        if (capacity == 0) { this.elements = EMPTY_LIST; }
         if (capacity > 0) {
-            this.elementData = new Object[capacity];
+            this.elements = new Object[capacity];
             size = capacity;
         }
     }
@@ -26,7 +27,7 @@ public class DIYArrayList<T> implements List<T> {
     }
 
     public void sort() {
-        Arrays.sort(elementData, 0, size);
+        Arrays.sort(elements, 0, size);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class DIYArrayList<T> implements List<T> {
 
     @Override
     public boolean contains(Object o) {
-        for (Object e : elementData) {
+        for (Object e : elements) {
             if (e.equals(o)) return true;
         }
         return false;
@@ -54,15 +55,15 @@ public class DIYArrayList<T> implements List<T> {
 
     @Override
     public Object[] toArray() {
-        return Arrays.copyOf(elementData, size);
+        return Arrays.copyOf(elements, size);
     }
 
     @Override
     public <T1> T1[] toArray(T1[] a) {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
-            return (T1[]) Arrays.copyOf(elementData, size, a.getClass());
-        System.arraycopy(elementData, 0, a, 0, size);
+            return (T1[]) Arrays.copyOf(elements, size, a.getClass());
+        System.arraycopy(elements, 0, a, 0, size);
         if (a.length > size)
             a[size] = null;
         return a;
@@ -70,9 +71,9 @@ public class DIYArrayList<T> implements List<T> {
 
     @Override
     public boolean add(T t) {
-        if (size == elementData.length)
-            elementData = increase();
-        elementData[size] = t;
+        if (size == elements.length)
+            elements = increase();
+        elements[size] = t;
         size++;
         return true;
     }
@@ -96,8 +97,8 @@ public class DIYArrayList<T> implements List<T> {
         Object[] a = c.toArray();
         int increaseSize = a.length;
         if (increaseSize == 0) return false;
-        if (increaseSize > elementData.length - size) elementData = increase(increaseSize);
-        System.arraycopy(a, 0, elementData, size, increaseSize);
+        if (increaseSize > elements.length - size) elements = increase(increaseSize);
+        System.arraycopy(a, 0, elements, size, increaseSize);
         size += increaseSize;
         return true;
     }
@@ -108,12 +109,12 @@ public class DIYArrayList<T> implements List<T> {
             Object[] a = c.toArray();
             int increaseSize = a.length;
             if (increaseSize == 0) return false;
-            if (increaseSize > elementData.length - size) elementData = increase(increaseSize);
+            if (increaseSize > elements.length - size) elements = increase(increaseSize);
             int movedCount = size - index;
             if (movedCount > 0) {
-                System.arraycopy(this.elementData, index, this.elementData, index + increaseSize, movedCount);
+                System.arraycopy(this.elements, index, this.elements, index + increaseSize, movedCount);
             }
-            System.arraycopy(a, 0, this.elementData, index, increaseSize);
+            System.arraycopy(a, 0, this.elements, index, increaseSize);
             size += increaseSize;
             return true;
         }
@@ -133,45 +134,45 @@ public class DIYArrayList<T> implements List<T> {
     @Override
     public void clear() {
         for (int i = 0; i < size; i++) {
-            elementData[i] = null;
+            elements[i] = null;
         }
     }
 
     @Override
     public T get(int index) {
-        if (validIndex(index)) { return (T) elementData[index]; };
+        if (validIndex(index)) { return (T) elements[index]; };
         return null;
     }
 
     @Override
     public T set(int index, T element) {
         if (validIndex(index)) {
-            T old_element = (T) elementData[index];
-            elementData[index] = element;
+            T old_element = (T) elements[index];
+            elements[index] = element;
             return old_element;
         }
         return null;
     }
 
     private Object[] increase() {
-        return increase(1);
+        return increase(INCREASE_SIZE);
     }
 
     private Object[] increase(int size) {
-        if (elementData.length > 0) {
-            return elementData = Arrays.copyOf(elementData, elementData.length + size);
+        if (elements.length > 0) {
+            return elements = Arrays.copyOf(elements, elements.length + size);
         }
         else {
-            return elementData = new Object[size];
+            return elements = new Object[size];
         }
     }
 
     @Override
     public void add(int index, T element) {
-        if (size == elementData.length)
-            elementData = increase();
-        System.arraycopy(elementData, index, elementData, index + 1,size - index);
-        elementData[index] = element;
+        if (size == elements.length)
+            elements = increase();
+        System.arraycopy(elements, index, elements, index + 1,size - index);
+        elements[index] = element;
         size++;
     }
 
@@ -179,18 +180,18 @@ public class DIYArrayList<T> implements List<T> {
     public T remove(int index) {
         Object deletedElement = null;
         if (validIndex(index) && size > 0) {
-            deletedElement = elementData[index];
-            System.arraycopy(elementData, index + 1, elementData, index, size - 1 - index);
+            deletedElement = elements[index];
+            System.arraycopy(elements, index + 1, elements, index, size - 1 - index);
         }
         size--;
-        elementData[size] = null;
+        elements[size] = null;
         return (T) deletedElement;
     }
 
     @Override
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++) {
-            if (o.equals(elementData[i])) return i;
+            if (o.equals(elements[i])) return i;
         }
         return -1;
     }
@@ -198,7 +199,7 @@ public class DIYArrayList<T> implements List<T> {
     @Override
     public int lastIndexOf(Object o) {
         for (int i = size - 1; i >= 0; i--) {
-            if (o.equals(elementData[i])) return i;
+            if (o.equals(elements[i])) return i;
         }
         return -1;
     }
@@ -221,11 +222,11 @@ public class DIYArrayList<T> implements List<T> {
         public T next() {
             if (cursor >= size)
                 throw new NoSuchElementException();
-            if (cursor >= elementData.length)
+            if (cursor >= elements.length)
                 throw new ConcurrentModificationException();
             lastReturned = cursor;
             cursor++;
-            return (T) elementData[lastReturned];
+            return (T) elements[lastReturned];
         }
 
         @Override
@@ -238,7 +239,7 @@ public class DIYArrayList<T> implements List<T> {
             int i = cursor - 1;
             if (i < 0)
                 throw new NoSuchElementException();
-            Object[] elementData = DIYArrayList.this.elementData;
+            Object[] elementData = DIYArrayList.this.elements;
             if (i >= elementData.length)
                 throw new ConcurrentModificationException();
             cursor = i;
