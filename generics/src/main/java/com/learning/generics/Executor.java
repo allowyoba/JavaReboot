@@ -1,4 +1,4 @@
-package com.learning;
+package com.learning.generics;
 
 import com.google.common.math.LongMath;
 
