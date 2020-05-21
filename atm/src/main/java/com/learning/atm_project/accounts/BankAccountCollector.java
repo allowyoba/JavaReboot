@@ -1,6 +1,6 @@
-package com.learning.atm;
+package com.learning.atm_project.accounts;
 
-import java.math.BigDecimal;
+import com.learning.atm_project.AccountType;
 
 public class BankAccountCollector implements BankAccount {
     private final AccountType accountType = AccountType.COLLECTOR;
@@ -25,18 +25,5 @@ public class BankAccountCollector implements BankAccount {
     @Override
     public String getOwner() {
         return this.owner;
-    }
-
-    @Override
-    public void deposit(BigDecimal deposit) {
-    }
-
-    @Override
-    public void withdraw(BigDecimal money) {
-    }
-
-    @Override
-    public BigDecimal getBalance() {
-        return null;
     }
 }

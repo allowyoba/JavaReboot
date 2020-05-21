@@ -1,5 +1,11 @@
 package com.learning.atm;
 
+import com.learning.atm.cassette.CassetteImpl;
+import com.learning.atm.cassette.CrowdedCell;
+import com.learning.atm.cassette.NotEnoughBills;
+import com.learning.atm.exceptions.InsufficientPrivileges;
+import com.learning.atm.exceptions.UserNotFound;
+
 import java.lang.Math;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -7,7 +13,7 @@ import java.sql.*;
 
 class ATM {
     private final int[] FACE_VALUES = { 100, 200, 500, 1000, 5000 };
-    private Cell[] cells = null;
+    private CassetteImpl[] cassettes = null;
     private int minimumRemainingFaceValue;
     private BigDecimal currentBalance = null;
 
@@ -39,17 +45,17 @@ class ATM {
         this(null);
     }
 
-    private ATM(Cell[] cells) throws SQLException, ClassNotFoundException, CrowdedCell {
+    private ATM(CassetteImpl[] cassettes) throws SQLException, ClassNotFoundException, CrowdedCell {
         this.currentBalance = BigDecimal.ZERO;
-        if (cells == null) {
-            this.cells = new Cell[FACE_VALUES.length];
+        if (cassettes == null) {
+            this.cassettes = new CassetteImpl[FACE_VALUES.length];
             for (int i = 0; i < FACE_VALUES.length; i++) {
-                this.cells[i] = new Cell();
+                this.cassettes[i] = new CassetteImpl();
             }
         } else {
-            this.cells = cells;
+            this.cassettes = cassettes;
             for (int i = 0; i < FACE_VALUES.length; i++) {
-                int cellSize = this.cells[i].getCurrentSize();
+                int cellSize = this.cassettes[i].getBillsCount();
                 this.currentBalance.add(BigDecimal.valueOf(cellSize * FACE_VALUES[i]));
             }
         }
@@ -146,17 +152,17 @@ class ATM {
 
     private void getMinimumRemainingFaceValue() {
         int i = 0;
-        while (i < this.FACE_VALUES.length && this.cells[i].getCurrentSize() == 0) {
+        while (i < this.FACE_VALUES.length && this.cassettes[i].getBillsCount() == 0) {
             i++;
         }
         if (i == FACE_VALUES.length) this.minimumRemainingFaceValue = 0;
         else this.minimumRemainingFaceValue = FACE_VALUES[i];
     }
 
-    private Cell[] getCells() throws InsufficientPrivileges {
+    private CassetteImpl[] getCassettes() throws InsufficientPrivileges {
         if ((bankAccount == null) || (bankAccount.getAccountType().equals(AccountType.CLIENT)))
             throw new InsufficientPrivileges();
-        return this.cells;
+        return this.cassettes;
     }
 
     private int[] getBills(BigDecimal sum) throws NotEnoughBills, InsufficientPrivileges {
@@ -171,8 +177,8 @@ class ATM {
         for (int i = FACE_VALUES.length - 1; i >= 0; i--) {
             if (sum.compareTo(BigDecimal.valueOf(FACE_VALUES[i])) < 0) continue;
             else {
-                bills[i] = Math.min(sum.divide(BigDecimal.valueOf(FACE_VALUES[i]), 0, RoundingMode.CEILING).intValue(), this.cells[i].getCurrentSize());
-                this.cells[i].getBills(bills[i]);
+                bills[i] = Math.min(sum.divide(BigDecimal.valueOf(FACE_VALUES[i]), 0, RoundingMode.CEILING).intValue(), this.cassettes[i].getBillsCount());
+                this.cassettes[i].withdrawBills(bills[i]);
                 sum = sum.subtract(BigDecimal.valueOf(bills[i] * FACE_VALUES[i]));
                 if (sum.equals(BigDecimal.ZERO)) break;
             }
@@ -188,14 +194,14 @@ class ATM {
         }
 
         for (int i = 0; i < FACE_VALUES.length; i++) {
-            int currentCellBillCount = this.cells[i].getCurrentSize();
-            if (bills[i] + currentCellBillCount > Cell.getMaximumSize()) return bills;
+            int currentCellBillCount = this.cassettes[i].getBillsCount();
+            if (bills[i] + currentCellBillCount > CassetteImpl.getCassetteCapacity()) return bills;
         }
 
         BigDecimal deposit = BigDecimal.ZERO;
 
         for (int i = 0; i < FACE_VALUES.length; i++) {
-            this.cells[i].putBills(bills[i]);
+            this.cassettes[i].addBills(bills[i]);
             deposit = deposit.add(BigDecimal.valueOf(bills[i] * FACE_VALUES[i]));
 
         }
@@ -231,9 +237,9 @@ class ATM {
 
     public void printCellsCount() {
         try {
-            Cell[] cells = getCells();
+            CassetteImpl[] cassettes = getCassettes();
             for (int i = 0; i < FACE_VALUES.length; i++) {
-                print("Ячейка " + i + ", номинал " + FACE_VALUES[i] + ": " + cells[i].getCurrentSize(), 0);
+                print("Ячейка " + i + ", номинал " + FACE_VALUES[i] + ": " + cassettes[i].getBillsCount(), 0);
             }
             print("");
         } catch (InsufficientPrivileges ex) {
@@ -265,7 +271,7 @@ class ATM {
     public String toString() {
         String result = new String(currentBalance + "\n");
         for (int i = 0; i < FACE_VALUES.length; i++) {
-            result += FACE_VALUES[i] + ": " + cells[i].getCurrentSize() + "\n";
+            result += FACE_VALUES[i] + ": " + cassettes[i].getBillsCount() + "\n";
         }
         return result;
     }
@@ -289,5 +295,3 @@ class ATM {
     }
 }
 
-class InsufficientPrivileges extends Exception {}
-class UserNotFound extends Exception {}
