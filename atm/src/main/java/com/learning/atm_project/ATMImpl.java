@@ -1,13 +1,13 @@
 package com.learning.atm_project;
 
 import com.learning.atm_project.atm.ATM;
-import com.learning.atm_project.atm.CassetteATM;
 import com.learning.atm_project.atm.CashMachine;
+import com.learning.atm_project.atm.CassetteATM;
 import com.learning.atm_project.cassette.CassetteImpl;
 import com.learning.atm_project.dto.FaceValuesPair;
 import com.learning.atm_project.exceptions.AddError;
+import com.learning.atm_project.exceptions.IncorrectValue;
 import com.learning.atm_project.exceptions.NotEnoughBills;
-import com.learning.atm_project.exceptions.WithdrawError;
 import com.learning.atm_project.face_value.FaceValue;
 
 import java.util.*;
@@ -63,9 +63,11 @@ public class ATMImpl implements ATM, CashMachine {
 
     @Override
     public List<FaceValue> withdrawBills(int amount) {
+        if (amount > getCurrentBalance())
+            throw new NotEnoughBills();
         FaceValue minimal = getMinimalFaceValue();
         if (amount % minimal.getValue() > 0)
-            throw new WithdrawError();
+            throw new IncorrectValue();
         int remainingAmount = amount;
         List<FaceValue> faceValues = new ArrayList<>();
         for (CassetteATM cassette : cassettes) {
@@ -80,7 +82,7 @@ public class ATMImpl implements ATM, CashMachine {
     }
 
     @Override
-    public List<FaceValuesPair> balance() {
+    public List<FaceValuesPair> billsBalance() {
         return cassettes.stream()
                 .map(cassette -> new FaceValuesPair(cassette.faceValue, cassette.cassette.getBillsCount()))
                 .collect(Collectors.toList());
@@ -89,7 +91,7 @@ public class ATMImpl implements ATM, CashMachine {
     public static void main(String[] args) {
         ATMImpl atm = new ATMImpl();
         System.out.println(atm.getCurrentBalance());
-        for (FaceValuesPair i : atm.balance()) {
+        for (FaceValuesPair i : atm.billsBalance()) {
             System.out.println(i.getFaceValue().toString() + " " + i.getCount());
         }
 //        for (FaceValue i : atm.withdrawBills(1)) {

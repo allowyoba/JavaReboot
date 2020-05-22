@@ -7,8 +7,4 @@ public interface Cassette {
     void addBills(int count) throws CrowdedCassette;
     int withdrawBills(int count) throws NotEnoughBills;
     int getBillsCount();
-
-    static int getCassetteCapacity() {
-        return 0;
-    }
 }
