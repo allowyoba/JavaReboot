@@ -5,7 +5,7 @@ import com.learning.atm_project.exceptions.IncorrectValue;
 import com.learning.atm_project.exceptions.NotEnoughBills;
 
 public class CassetteImpl implements Cassette {
-    private static final int CASSETTE_CAPACITY = 100000;
+    private static final int CASSETTE_CAPACITY = 1111;
     private int billsCount = 0;
 
     public CassetteImpl() {

@@ -4,6 +4,7 @@ import com.learning.atm_project.atm.ATM;
 import com.learning.atm_project.atm.CashMachine;
 import com.learning.atm_project.atm.CassetteATM;
 import com.learning.atm_project.cassette.CassetteImpl;
+import com.learning.atm_project.db.Connector;
 import com.learning.atm_project.dto.FaceValuesPair;
 import com.learning.atm_project.exceptions.AddError;
 import com.learning.atm_project.exceptions.IncorrectValue;
@@ -15,14 +16,26 @@ import java.util.stream.Collectors;
 
 public class ATMImpl implements ATM, CashMachine {
     private List<CassetteATM> cassettes;
+    private Connector connector;
 
     public ATMImpl() {
+        // Cassettes
         cassettes = new ArrayList<>();
         List<FaceValue> values = Arrays.asList(FaceValue.values());
         values.sort(Comparator.reverseOrder());
         for (FaceValue faceValue : values) {
             cassettes.add(new CassetteATM(new CassetteImpl(), faceValue));
         }
+        // Connector
+        String JDBC_DRIVER = "org.h2.Driver";
+        String DB_URL = "jdbc:h2:file:~/bankaccount";
+        String DB_USER = "BankManager";
+        String DB_PASSWORD = "VeryStrongPassword";
+        connector = new Connector(JDBC_DRIVER, DB_URL, DB_USER, DB_PASSWORD);
+    }
+
+    public void createSession(String cardNumber, String pin) {
+
     }
 
     public int getCurrentBalance() {
